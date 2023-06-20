@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "docker-manager"
+version = "0.1.0"
+description = "This repository provides a set of functionalities for managing Docker containers in the context of the specified use case."
+authors = ["Federico Cardoso <federico.cardoso.e@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+pyyaml = "^6.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2"
