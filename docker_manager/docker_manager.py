@@ -1,50 +1,52 @@
+import os
+import shutil
 import subprocess
 from typing import Dict
-import yaml
+import docker
+from docker import DockerClient
+from docker.types import LogConfig
 
 from docker_manager import os_utils
+from docker_manager.docker_settings import DockerSettings
 
 
 class DockerManager:
     def __init__(self):
-        pass
+        self.settings = DockerSettings()
+        self.client:DockerClient = docker.from_env(
+            **self.settings.dict()
+        )
 
-    @staticmethod
-    def get_active_containers():
-        cmd = "docker ps --format '{{.Names}}'"
-        output = subprocess.check_output(cmd, shell=True)
-        backtestings = [container for container in output.decode().split()]
-        return backtestings
+    def get_active_containers(self):
+        containers = self.client.containers.list()
+        container_names = [container.name for container in containers]
+        return container_names
 
-    @staticmethod
-    def get_exited_containers():
-        cmd = "docker ps --filter status=exited --format '{{.Names}}'"
-        output = subprocess.check_output(cmd, shell=True)
-        containers = output.decode().split()
-        return containers
+    def get_exited_containers(self):
+        containers = self.client.containers.list(all=True, filters={'status': 'exited'})
+        container_names = [container.name for container in containers]
+        return container_names
 
-    @staticmethod
-    def clean_exited_containers():
-        cmd = "docker container prune --force"
-        subprocess.Popen(cmd, shell=True)
+    def clean_exited_containers(self):
+        self.client.containers.prune()
 
     def stop_active_containers(self):
         containers = self.get_active_containers()
         for container in containers:
-            cmd = f"docker stop {container}"
-            subprocess.Popen(cmd, shell=True)
+            container_obj = self.client.containers.get(container)
+            container_obj.stop()
 
     def stop_container(self, container_name):
-        cmd = f"docker stop {container_name}"
-        subprocess.Popen(cmd, shell=True)
+        container_obj = self.client.containers.get(container_name)
+        container_obj.stop()
 
     def start_container(self, container_name):
-        cmd = f"docker start {container_name}"
-        subprocess.Popen(cmd, shell=True)
+        container_obj = self.client.containers.get(container_name)
+        container_obj.start()
 
     def remove_container(self, container_name):
-        cmd = f"docker rm {container_name}"
-        subprocess.Popen(cmd, shell=True)
+        container_obj = self.client.containers.get(container_name)
+        container_obj.remove()
 
     def create_download_candles_container(self, candles_config: Dict, yml_path: str):
         os_utils.dump_dict_to_yaml(candles_config, yml_path)
@@ -85,3 +87,32 @@ class DockerManager:
                                     "dardonacci/hummingbot:development"]
 
         subprocess.Popen(create_container_command)
+
+
+    def create_hummingbot_instance(self, instance_name, base_conf_folder, target_conf_folder):
+        os.makedirs(target_conf_folder, exist_ok=True)
+        shutil.copytree(base_conf_folder, target_conf_folder, dirs_exist_ok=True)
+        conf_file_path = f"{target_conf_folder}/conf/conf_client.yml"
+        config = os_utils.read_yaml_file(conf_file_path)
+        config['instance_id'] = instance_name
+        os_utils.dump_dict_to_yaml(config, conf_file_path)
+        lc = LogConfig(config={
+        'max-size': '10m',
+        'max-file':5,
+        })
+        container = self.client.containers.run(
+            "dardonacci/hummingbot:development",
+            name=instance_name,
+            network_mode="host",
+            volumes={
+                f"./{target_conf_folder}/conf": {'bind': '/home/hummingbot/conf', 'mode': 'rw'},
+                f"./{target_conf_folder}/conf/connectors": {'bind': '/home/hummingbot/conf/connectors', 'mode': 'rw'},
+                f"./{target_conf_folder}/conf/strategies": {'bind': '/home/hummingbot/conf/strategies', 'mode': 'rw'},
+                f"./{target_conf_folder}/logs": {'bind': '/home/hummingbot/logs', 'mode': 'rw'},
+                "./data/": {'bind': '/home/hummingbot/data', 'mode': 'rw'},
+                f"./{target_conf_folder}/certs": {'bind': '/home/hummingbot/certs', 'mode': 'rw'},
+            },
+            environment=["CONFIG_PASSWORD=a"],
+            detach=True,
+            log_config = lc
+        )
