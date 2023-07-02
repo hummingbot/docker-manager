@@ -60,36 +60,6 @@ class DockerManager:
         subprocess.Popen(command)
 
     def create_hummingbot_instance(self, instance_name, base_conf_folder, target_conf_folder):
-        if not os_utils.directory_exists(target_conf_folder):
-            create_folder_command = ["mkdir", "-p", target_conf_folder]
-            create_folder_task = subprocess.Popen(create_folder_command)
-            create_folder_task.wait()
-            command = ["cp", "-rf", base_conf_folder, target_conf_folder]
-            copy_folder_task = subprocess.Popen(command)
-            copy_folder_task.wait()
-        conf_file_path = f"{target_conf_folder}/conf/conf_client.yml"
-        config = os_utils.read_yaml_file(conf_file_path)
-        config['instance_id'] = instance_name
-        os_utils.dump_dict_to_yaml(config, conf_file_path)
-        # TODO: Mount script folder for custom scripts
-        create_container_command = ["docker", "run", "-it", "-d", "--log-opt", "max-size=10m", "--log-opt",
-                                    "max-file=5",
-                                    "--name", instance_name,
-                                    "--network", "host",
-                                    "-v", f"./{target_conf_folder}/conf:/home/hummingbot/conf",
-                                    "-v", f"./{target_conf_folder}/conf/connectors:/home/hummingbot/conf/connectors",
-                                    "-v", f"./{target_conf_folder}/conf/strategies:/home/hummingbot/conf/strategies",
-                                    "-v", f"./{target_conf_folder}/logs:/home/hummingbot/logs",
-                                    "-v", "./data/:/home/hummingbot/data",
-                                    # "-v", f"./{target_conf_folder}/scripts:/home/hummingbot/scripts",
-                                    "-v", f"./{target_conf_folder}/certs:/home/hummingbot/certs",
-                                    "-e", "CONFIG_PASSWORD=a",
-                                    "dardonacci/hummingbot:development"]
-
-        subprocess.Popen(create_container_command)
-
-
-    def create_hummingbot_instance(self, instance_name, base_conf_folder, target_conf_folder):
         os.makedirs(target_conf_folder, exist_ok=True)
         shutil.copytree(base_conf_folder, target_conf_folder, dirs_exist_ok=True)
         conf_file_path = f"{target_conf_folder}/conf/conf_client.yml"
