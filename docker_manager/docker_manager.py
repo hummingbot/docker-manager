@@ -13,9 +13,7 @@ from docker_manager.docker_settings import DockerSettings
 class DockerManager:
     def __init__(self):
         self.settings = DockerSettings()
-        self.client:DockerClient = docker.from_env(
-            **self.settings.dict()
-        )
+        self.client = DockerClient(**self.settings.dict())
 
     def get_active_containers(self):
         containers = self.client.containers.list()
