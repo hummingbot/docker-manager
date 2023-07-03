@@ -1,9 +1,10 @@
 import os
 import shutil
 import subprocess
-from typing import Dict
+from typing import Dict, List
 import docker
 from docker.types import LogConfig
+from docker.models.containers import Container
 
 from docker_manager import os_utils
 
@@ -13,11 +14,19 @@ class DockerManager:
         self.client = docker.from_env()
 
     def get_active_containers(self):
+        containers:List[Container] = self.client.containers.list()
+        return containers
+    
+    def get_exited_containers(self):
+        containers:List[Container] = self.client.containers.list(all=True, filters={'status': 'exited'})        
+        return containers
+    
+    def get_active_containers_name(self):
         containers = self.client.containers.list()
         container_names = [container.name for container in containers]
         return container_names
 
-    def get_exited_containers(self):
+    def get_exited_containers_name(self):
         containers = self.client.containers.list(all=True, filters={'status': 'exited'})
         container_names = [container.name for container in containers]
         return container_names
