@@ -3,17 +3,14 @@ import shutil
 import subprocess
 from typing import Dict
 import docker
-from docker import DockerClient
 from docker.types import LogConfig
 
 from docker_manager import os_utils
-from docker_manager.docker_settings import DockerSettings
 
 
 class DockerManager:
     def __init__(self):
-        self.settings = DockerSettings()
-        self.client = DockerClient(**self.settings.dict())
+        self.client = docker.from_env()
 
     def get_active_containers(self):
         containers = self.client.containers.list()
