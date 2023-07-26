@@ -57,7 +57,8 @@ class DockerManager:
                    "hummingbot_files/compose_files/broker-compose.yml", "up", "-d", "--remove-orphans"]
         subprocess.Popen(command)
 
-    def create_hummingbot_instance(self, instance_name, base_conf_folder, target_conf_folder):
+    def create_hummingbot_instance(self, instance_name: str, base_conf_folder: str, target_conf_folder: str,
+                                   image: str = "hummingbot/hummingbot:latest"):
         if not os_utils.directory_exists(target_conf_folder):
             create_folder_command = ["mkdir", "-p", target_conf_folder]
             create_folder_task = subprocess.Popen(create_folder_command)
@@ -82,6 +83,6 @@ class DockerManager:
                                     "-v", f"./{target_conf_folder}/scripts:/home/hummingbot/scripts",
                                     "-v", f"./{target_conf_folder}/certs:/home/hummingbot/certs",
                                     "-e", "CONFIG_PASSWORD=a",
-                                    "hummingbot/hummingbot:development"]
+                                    image]
 
         subprocess.Popen(create_container_command)
