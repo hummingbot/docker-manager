@@ -78,10 +78,10 @@ class DockerManager:
                                     "-v", f"./{target_conf_folder}/conf/connectors:/home/hummingbot/conf/connectors",
                                     "-v", f"./{target_conf_folder}/conf/strategies:/home/hummingbot/conf/strategies",
                                     "-v", f"./{target_conf_folder}/logs:/home/hummingbot/logs",
-                                    "-v", "./data/:/home/hummingbot/data",
-                                    # "-v", f"./{target_conf_folder}/scripts:/home/hummingbot/scripts",
+                                    "-v", f"./{target_conf_folder}/data/:/home/hummingbot/data",
+                                    "-v", f"./{target_conf_folder}/scripts:/home/hummingbot/scripts",
                                     "-v", f"./{target_conf_folder}/certs:/home/hummingbot/certs",
                                     "-e", "CONFIG_PASSWORD=a",
-                                    "dardonacci/hummingbot:development"]
+                                    "hummingbot/hummingbot:development"]
 
         subprocess.Popen(create_container_command)
