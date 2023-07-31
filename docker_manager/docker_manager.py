@@ -28,6 +28,15 @@ class DockerManager:
         cmd = "docker container prune --force"
         subprocess.Popen(cmd, shell=True)
 
+    @staticmethod
+    def is_docker_running():
+        cmd = "docker ps"
+        try:
+            subprocess.check_output(cmd, shell=True)
+            return True
+        except subprocess.CalledProcessError:
+            return False
+
     def stop_active_containers(self):
         containers = self.get_active_containers()
         for container in containers:
