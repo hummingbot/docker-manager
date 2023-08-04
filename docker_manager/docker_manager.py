@@ -69,9 +69,15 @@ class DockerManager:
     def create_hummingbot_instance(self, instance_name: str, base_conf_folder: str, target_conf_folder: str,
                                    image: str = "hummingbot/hummingbot:latest"):
         if not os_utils.directory_exists(target_conf_folder):
-            create_folder_command = ["mkdir", "-p", target_conf_folder]
-            create_folder_task = subprocess.Popen(create_folder_command)
-            create_folder_task.wait()
+            # This creates the bot_dir, but the 'cp -r' then copies the whole 'master_bot_conf'
+            # to this forder and thus the conf_client.yml cannot be found and the creation of a new bot fails
+            # create_folder_command = ["mkdir", "-p", target_conf_folder]
+            # create_folder_task = subprocess.Popen(create_folder_command)
+            # create_folder_task.wait()
+
+            # This comand on its own, will create the 'target_conf_folder'
+            # Another attempt was to write 'base_conf_folder + "{conf,conf_client.yml,scripts}"'
+            # but that fails with the Popen (?) ... not sure why
             command = ["cp", "-rf", base_conf_folder, target_conf_folder]
             copy_folder_task = subprocess.Popen(command)
             copy_folder_task.wait()
