@@ -1,0 +1,56 @@
+name: publish_conda
+
+on:
+  release:
+    types: [published]
+    
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - uses: conda-incubator/setup-miniconda@v2.2.0
+      with:
+        miniconda-version: "latest"
+        python-version: 3.11
+        auto-update-conda: true
+        auto-activate-base: true
+        use-only-tar-bz2: true
+
+    - name: Verify conda environment
+      run: |
+        conda info | grep "user-agent"
+
+    - name: Install conda-build
+      run: |
+        conda install -y anaconda-client conda-build
+
+    - name: Build conda package
+      run: |
+        cd .conda
+        conda-build -output-folder . .
+    
+    - name: Convert binaries to other platforms
+      run: |
+        platforms=( osx-64 win-64 )
+        find ./linux-64/ -name *.tar.bz2 | while read file
+        do
+            echo $file
+            for platform in "${platforms[@]}"
+            do
+              conda convert --platform $platform $file  -o .
+            done    
+        done
+
+    - name: Upload package
+      with:
+        anaconda-token: ${{ secrets.ANACONDA_TOKEN }}
+      run: |
+        find . -name *.tar.bz2 | while read file
+        do
+            echo $file
+            anaconda upload $file
+        done
