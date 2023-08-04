@@ -46,11 +46,9 @@ jobs:
         done
 
     - name: Upload package
-      with:
-        anaconda-token: ${{ secrets.ANACONDA_TOKEN }}
       run: |
         find . -name *.tar.bz2 | while read file
         do
             echo $file
-            anaconda upload $file
+            anaconda -t ${{ secrets.ANACONDA_TOKEN }} upload $file
         done
