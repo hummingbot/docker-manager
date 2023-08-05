@@ -34,7 +34,7 @@ jobs:
     - name: Build conda package
       run: |
         cd .conda
-        conda build -output-folder . .
+        conda build --output-folder . .
     
     - name: Convert binaries to other platforms
       run: |
