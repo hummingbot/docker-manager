@@ -25,5 +25,5 @@ test:
 
 about:
   home: https://github.com/hummingbot/docker-manager
-  license: {{ data['license'] }}
+  license: Apache 2.0
 summary: "This repository provides a set of functionalities for managing Docker containers in the context of the specified use case."
