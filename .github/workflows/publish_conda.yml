@@ -7,6 +7,9 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -el {0}
     steps:
     - uses: actions/checkout@v3
       with:
@@ -17,7 +20,7 @@ jobs:
         miniconda-version: "latest"
         python-version: 3.11
         auto-update-conda: true
-        auto-activate-base: true
+        activate-environment: ANACONDA
         use-only-tar-bz2: true
 
     - name: Verify conda environment
