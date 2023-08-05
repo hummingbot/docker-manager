@@ -8,9 +8,7 @@ setup(
     author_email="federico.cardoso.e@gmail.com",
     packages=find_packages(exclude=["tests"]),
     python_requires=">=3.8",
-    install_requires=[
-        # Add your dependencies here
-    ],
+    install_requires=[],
     extras_require={
         "dev": [
             "pytest"
