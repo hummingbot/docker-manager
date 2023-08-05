@@ -1,8 +1,6 @@
 {% set name = "docker-manager" %}
 {% set data = load_setup_py_data() %}
 
-
-
 package:
   name: {{ name|lower }}
   version: {{ data['version'] }}
@@ -26,6 +24,6 @@ test:
     - {{ name|lower }}
 
 about:
-  home: {{ data['url'] }}
+  home: https://github.com/hummingbot/docker-manager
   license: {{ data['license'] }}
-summary: {{ data['description'] }}
+summary: "This repository provides a set of functionalities for managing Docker containers in the context of the specified use case."

@@ -27,9 +27,9 @@ jobs:
       run: |
         conda info | grep "user-agent"
 
-    - name: Install conda-build
+    - name: Install Anaconda
       run: |
-        conda install -y anaconda-client conda-build
+        conda install -y anaconda-client
 
     - name: Build conda package
       run: |
