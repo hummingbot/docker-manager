@@ -39,18 +39,18 @@ jobs:
     - name: Convert binaries to other platforms
       run: |
         platforms=( osx-64 win-64 )
-        find ../conda-bld/{noarch,linux-64}/ -name *.tar.bz2 | while read file
+        find conda-bld/{noarch,linux-64}/ -name *.tar.bz2 | while read file
         do
             echo $file
             for platform in "${platforms[@]}"
             do
-              conda convert --platform $platform $file  -o ../conda-bld
+              conda convert --platform $platform $file  -o conda-bld/
             done    
         done
 
     - name: Upload package
       run: |
-        find ../conda-bld/ -name *.tar.bz2 | while read file
+        find conda-bld/ -name *.tar.bz2 | while read file
         do
             echo $file
             anaconda -t ${{ secrets.ANACONDA_TOKEN }} upload $file
@@ -58,5 +58,5 @@ jobs:
     
     - name: Cleanup
       run: |
-        rm -rf ../conda-bld
+        rm -rf conda-bld
 
