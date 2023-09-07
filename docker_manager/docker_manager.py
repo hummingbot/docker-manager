@@ -1,5 +1,5 @@
 import subprocess
-from typing import Dict
+from typing import Dict, Optional
 import yaml
 
 from docker_manager import os_utils
@@ -66,7 +66,11 @@ class DockerManager:
                    "hummingbot_files/compose_files/broker-compose.yml", "up", "-d", "--remove-orphans"]
         subprocess.Popen(command)
 
-    def create_hummingbot_instance(self, instance_name: str, base_conf_folder: str, target_conf_folder: str,
+    def create_hummingbot_instance(self, instance_name: str,
+                                   base_conf_folder: str,
+                                   target_conf_folder: str,
+                                   controllers_folder: Optional[str] = None,
+                                   controllers_config_folder: Optional[str] = None,
                                    image: str = "hummingbot/hummingbot:latest"):
         if not os_utils.directory_exists(target_conf_folder):
             create_folder_command = ["mkdir", "-p", target_conf_folder]
@@ -75,6 +79,15 @@ class DockerManager:
             command = ["cp", "-rf", base_conf_folder, target_conf_folder]
             copy_folder_task = subprocess.Popen(command)
             copy_folder_task.wait()
+        if controllers_folder and controllers_config_folder:
+            # Copy controllers folder
+            command = ["cp", "-rf", controllers_folder, target_conf_folder]
+            t1 = subprocess.Popen(command)
+            # Copy controllers config folder
+            command = ["cp", "-rf", controllers_config_folder, target_conf_folder]
+            t2 = subprocess.Popen(command)
+            t1.wait()
+            t2.wait()
         conf_file_path = f"{target_conf_folder}/conf/conf_client.yml"
         config = os_utils.read_yaml_file(conf_file_path)
         config['instance_id'] = instance_name
@@ -91,6 +104,8 @@ class DockerManager:
                                     "-v", f"./{target_conf_folder}/data/:/home/hummingbot/data",
                                     "-v", f"./{target_conf_folder}/scripts:/home/hummingbot/scripts",
                                     "-v", f"./{target_conf_folder}/certs:/home/hummingbot/certs",
+                                    "-v", f"./{target_conf_folder}/controllers:/home/hummingbot/hummingbot/smart_components/controllers",
+                                    "-v", f"./{target_conf_folder}/controllers_config:/home/hummingbot/conf/controllers_config",
                                     "-e", "CONFIG_PASSWORD=a",
                                     image]
 
