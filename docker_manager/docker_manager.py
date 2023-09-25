@@ -71,6 +71,7 @@ class DockerManager:
                                    target_conf_folder: str,
                                    controllers_folder: Optional[str] = None,
                                    controllers_config_folder: Optional[str] = None,
+                                   extra_environment_variables: Optional[list] = None,
                                    image: str = "hummingbot/hummingbot:latest"):
         if not os_utils.directory_exists(target_conf_folder):
             create_folder_command = ["mkdir", "-p", target_conf_folder]
@@ -83,10 +84,10 @@ class DockerManager:
             # Copy controllers folder
             command = ["cp", "-rf", controllers_folder, target_conf_folder]
             t1 = subprocess.Popen(command)
+            t1.wait()
             # Copy controllers config folder
             command = ["cp", "-rf", controllers_config_folder, target_conf_folder]
             t2 = subprocess.Popen(command)
-            t1.wait()
             t2.wait()
         conf_file_path = f"{target_conf_folder}/conf/conf_client.yml"
         config = os_utils.read_yaml_file(conf_file_path)
@@ -104,9 +105,11 @@ class DockerManager:
                                     "-v", f"./{target_conf_folder}/data/:/home/hummingbot/data",
                                     "-v", f"./{target_conf_folder}/scripts:/home/hummingbot/scripts",
                                     "-v", f"./{target_conf_folder}/certs:/home/hummingbot/certs",
-                                    "-v", f"./{target_conf_folder}/controllers:/home/hummingbot/hummingbot/smart_components/controllers",
-                                    "-v", f"./{target_conf_folder}/controllers_config:/home/hummingbot/conf/controllers_config",
-                                    "-e", "CONFIG_PASSWORD=a",
-                                    image]
+                                    "-v", f"./{controllers_folder}:/home/hummingbot/hummingbot/smart_components/controllers",
+                                    "-v", f"./{controllers_config_folder}:/home/hummingbot/conf/controllers_config",
+                                    "-e", "CONFIG_PASSWORD=a"]
 
+        if extra_environment_variables:
+            create_container_command.extend(extra_environment_variables)
+        create_container_command.append(image)
         subprocess.Popen(create_container_command)
